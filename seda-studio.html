@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Seda Studio — Salón de Belleza</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#FBF3EF;
+    --cream-2:#F6E9E3;
+    --blush:#F3D9D9;
+    --rose:#B8677A;
+    --rose-dark:#9A5065;
+    --ink:#3B2A2E;
+    --gold:#C9A66B;
+    --gold-soft: rgba(201,166,107,.35);
+    --shadow: 0 30px 60px -20px rgba(59,42,46,.35);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--cream);
+    color:var(--ink);
+    font-family:'Jost', sans-serif;
+    font-weight:300;
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3, .display{
+    font-family:'Cormorant Garamond', serif;
+    font-weight:500;
+    letter-spacing:.01em;
+  }
+  em{font-style:italic; color:var(--rose-dark);}
+  a{color:inherit; text-decoration:none;}
+  .eyebrow{
+    font-family:'Jost', sans-serif;
+    text-transform:uppercase;
+    letter-spacing:.28em;
+    font-size:.68rem;
+    color:var(--rose-dark);
+    font-weight:500;
+  }
+  img{max-width:100%; display:block;}
+  ::selection{background:var(--rose); color:var(--cream);}
+
+  a:focus-visible, button:focus-visible{
+    outline:2px solid var(--rose-dark);
+    outline-offset:3px;
+    border-radius:4px;
+  }
+
+  /* Enlace de salto — accesibilidad de teclado/lector de pantalla */
+  .skip-link{
+    position:absolute; top:-60px; left:16px; z-index:200;
+    padding:10px 18px; background:var(--ink); color:var(--cream);
+    border-radius:999px; font-size:.8rem; text-decoration:none;
+    transition:top .25s ease;
+  }
+  .skip-link:focus{ top:16px; }
+
+  /* =====================================================
+     LIQUID GLASS — base reutilizable (una sola receta)
+  ====================================================== */
+  .liquid-glass{
+    position:relative;
+    background:rgba(255,255,255,.42);
+    backdrop-filter:blur(20px) saturate(180%);
+    -webkit-backdrop-filter:blur(20px) saturate(180%);
+    border:1px solid rgba(255,255,255,.6);
+    box-shadow:
+      inset 0 1.5px 1.5px rgba(255,255,255,.9),
+      inset 0 -10px 18px -12px rgba(59,42,46,.25),
+      0 30px 60px -20px rgba(59,42,46,.35);
+    transition:box-shadow .4s ease, background .4s ease;
+  }
+  .liquid-glass:hover{
+    box-shadow:
+      inset 0 1.5px 1.5px rgba(255,255,255,1),
+      inset 0 -10px 16px -12px rgba(59,42,46,.28),
+      0 36px 70px -20px rgba(59,42,46,.42);
+  }
+  /* Accesibilidad: reducir transparencia -> fondo sólido, sin blur */
+  @media (prefers-reduced-transparency: reduce){
+    .liquid-glass{
+      background:var(--cream-2);
+      backdrop-filter:none;
+      -webkit-backdrop-filter:none;
+    }
+  }
+  /* Fallback: navegadores sin backdrop-filter */
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .liquid-glass{
+      background:rgba(251,243,239,.96);
+    }
+  }
+
+  /* ---------- Header ---------- */
+  header{
+    position:fixed; top:0; left:0; right:0; z-index:100;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:22px 5%;
+    background:rgba(251,243,239,0);
+    transition:background .5s ease, box-shadow .5s ease, padding .4s ease;
+  }
+  /* El header es la ÚNICA capa de glass protagonista de la barra —
+     por eso .nav-links, más abajo, deja de tener su propio blur:
+     vive sobre el header con un fondo sólido, no apilado. */
+  header.scrolled{
+    background:rgba(251,243,239,.86);
+    backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);
+    box-shadow:0 10px 30px -20px rgba(59,42,46,.4);
+    padding:14px 5%;
+  }
+  @media (prefers-reduced-transparency: reduce){
+    header.scrolled{ background:var(--cream); backdrop-filter:none; -webkit-backdrop-filter:none; }
+  }
+
+  .logo{
+    display:flex; align-items:center; gap:12px;
+    font-family:'Cormorant Garamond', serif;
+    font-size:1.3rem;
+    letter-spacing:.04em;
+  }
+  .logo-mark{
+    width:38px; height:38px; border-radius:50%;
+    border:1px solid var(--gold);
+    display:flex; align-items:center; justify-content:center;
+    font-size:1rem;
+    color:var(--rose-dark);
+    flex-shrink:0;
+  }
+
+  nav.nav-links{
+    display:flex; gap:6px;
+    padding:6px;
+    border-radius:100px;
+  }
+  .nav-links a{
+    font-size:.78rem; letter-spacing:.14em; text-transform:uppercase;
+    position:relative;
+    padding:9px 16px;
+    border-radius:100px;
+    color:var(--ink);
+    transition:background .3s ease, color .3s ease;
+  }
+  .nav-links a:hover{ background:rgba(59,42,46,.06); }
+  .nav-links a[aria-current="page"]{ color:var(--rose-dark); }
+
+  .btn{
+    position:relative;
+    display:inline-flex; align-items:center; gap:8px;
+    padding:13px 26px;
+    border-radius:100px;
+    font-size:.75rem; letter-spacing:.14em; text-transform:uppercase;
+    cursor:pointer;
+    overflow:hidden;
+    transform-style:preserve-3d;
+    transition:transform .45s cubic-bezier(.16,1,.3,1), box-shadow .45s ease, background .45s ease;
+    border:1px solid rgba(255,255,255,.4);
+  }
+  .btn::before{
+    content:'';
+    position:absolute; top:0; left:-60%;
+    width:40%; height:100%;
+    background:linear-gradient(115deg, transparent, rgba(255,255,255,.75), transparent);
+    transform:skewX(-20deg);
+    transition:left .7s ease;
+    pointer-events:none;
+  }
+  .btn:hover::before{ left:130%; }
+  .btn.solid{
+    background:linear-gradient(160deg, rgba(184,103,122,.94), rgba(154,80,101,.96));
+    color:var(--cream);
+    border-color:rgba(255,255,255,.4);
+    box-shadow:
+      inset 0 1px 1px rgba(255,255,255,.5),
+      inset 0 -8px 14px -8px rgba(59,42,46,.4),
+      0 14px 26px -12px rgba(154,80,101,.6);
+  }
+  .btn:hover{
+    transform:translateY(-3px) perspective(600px) rotateX(6deg);
+  }
+  .btn.solid:hover{
+    box-shadow:
+      inset 0 1px 1px rgba(255,255,255,.6),
+      inset 0 -8px 14px -8px rgba(59,42,46,.45),
+      0 20px 34px -12px rgba(154,80,101,.7);
+  }
+
+  /* Botón de menú móvil — antes no existía; el nav se rompía en pantallas angostas */
+  .menu-button{
+    display:none;
+    width:42px; height:42px; border-radius:50%;
+    border:1px solid rgba(59,42,46,.16);
+    background:rgba(255,255,255,.5);
+    align-items:center; justify-content:center;
+    cursor:pointer;
+    flex-shrink:0;
+  }
+  .menu-button span, .menu-button span::before, .menu-button span::after{
+    content:''; position:absolute; width:16px; height:1px; background:var(--ink);
+    transition:transform .3s ease, top .3s ease, opacity .3s ease;
+  }
+  .menu-button span::before{ top:-6px; }
+  .menu-button span::after{ top:6px; }
+  header.menu-open .menu-button span{ background:transparent; }
+  header.menu-open .menu-button span::before{ top:0; transform:rotate(45deg); }
+  header.menu-open .menu-button span::after{ top:0; transform:rotate(-45deg); }
+
+  .mobile-panel{ display:none; }
+
+  @media (max-width: 860px){
+    .nav-links{ display:none; }
+    .btn.solid.desktop-cta{ display:none; }
+    .menu-button{ display:flex; }
+    header.menu-open + .mobile-panel,
+    .mobile-panel.open{
+      display:flex; flex-direction:column; gap:4px;
+      position:fixed; top:78px; left:5%; right:5%; z-index:99;
+      padding:18px;
+      border-radius:22px;
+    }
+    .mobile-panel a{
+      padding:14px 12px; font-size:.85rem; letter-spacing:.08em; text-transform:uppercase;
+      border-radius:12px;
+    }
+    .mobile-panel a:hover{ background:rgba(59,42,46,.06); }
+  }
+
+  /* ---------- Hero ---------- */
+  .hero{
+    position:relative;
+    min-height:100svh;
+    padding:150px 5% 60px;
+    display:flex; flex-direction:column; justify-content:center;
+    overflow:hidden;
+  }
+  .ribbon-wrap{
+    position:absolute; inset:0; z-index:0;
+    perspective:1200px;
+  }
+  #ribbon-svg{
+    position:absolute; top:50%; left:50%;
+    width:130vw; max-width:1600px;
+    transform:translate(-50%,-50%);
+    opacity:.9;
+  }
+  /* Animación de flujo de la cinta: se anima el dash del trazo,
+     no solo se queda como línea estática */
+  .ribbon-path{
+    stroke-dasharray: 18 14;
+    animation: ribbonFlow 18s linear infinite;
+  }
+  #ribbon-path-2{ animation-duration: 24s; animation-direction:reverse; }
+  #ribbon-path-3{ animation-duration: 32s; }
+  @keyframes ribbonFlow{
+    to{ stroke-dashoffset: -640; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .ribbon-path{ animation:none; }
+  }
+
+  .hero-grain{
+    position:absolute; inset:0; z-index:1; pointer-events:none;
+    background-image:radial-gradient(circle at 1px 1px, rgba(59,42,46,.045) 1px, transparent 0);
+    background-size:26px 26px;
+  }
+  .hero-content{ position:relative; z-index:2; max-width:760px; }
+  .hero-content .eyebrow{ display:flex; align-items:center; gap:12px; margin-bottom:22px;}
+  .hero-content .eyebrow::before{
+    content:''; width:34px; height:1px; background:var(--gold);
+  }
+  .hero-title{
+    font-size:clamp(2.6rem, 6.4vw, 4.6rem);
+    line-height:1.04;
+    margin-bottom:26px;
+  }
+  .hero-sub{
+    font-size:1.05rem; line-height:1.7; max-width:480px;
+    color:rgba(59,42,46,.78);
+    margin-bottom:38px;
+  }
+
+  /* barra de búsqueda flotante — la capa de glass protagonista del hero */
+  .search-bar{
+    position:relative;
+    display:grid;
+    grid-template-columns:auto 1fr 1fr 1fr auto;
+    align-items:center;
+    gap:0;
+    border-radius:100px;
+    padding:8px 8px 8px 22px;
+    max-width:760px;
+    margin-top:10px;
+    overflow:hidden;
+    transform-style:preserve-3d;
+    transition:transform .5s cubic-bezier(.16,1,.3,1), box-shadow .5s ease;
+    will-change:transform;
+  }
+  .search-bar::before{
+    content:'';
+    position:absolute; top:0; left:-70%;
+    width:35%; height:100%;
+    background:linear-gradient(115deg, transparent, rgba(255,255,255,.6), transparent);
+    transform:skewX(-20deg);
+    pointer-events:none;
+    animation:searchSheen 7s ease-in-out infinite;
+  }
+  @keyframes searchSheen{
+    0%, 60%{ left:-70%; }
+    100%{ left:140%; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .search-bar::before{ animation:none; display:none; }
+  }
+  .search-bar .field{ padding:10px 20px; border-left:1px solid rgba(59,42,46,.1); position:relative; z-index:1; }
+  .search-bar .field:first-of-type{ border-left:none; }
+  .search-bar .field label{
+    display:block; font-size:.62rem; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--rose-dark); margin-bottom:2px;
+  }
+  .search-bar .field .val{ font-size:.85rem; }
+  .search-bar .go{
+    position:relative; z-index:1;
+    width:44px; height:44px; border-radius:50%;
+    background:linear-gradient(160deg, rgba(184,103,122,.95), rgba(154,80,101,.98));
+    color:var(--cream);
+    display:flex; align-items:center; justify-content:center;
+    border:1px solid rgba(255,255,255,.4);
+    box-shadow:
+      inset 0 1px 1px rgba(255,255,255,.6),
+      inset 0 -6px 10px -6px rgba(59,42,46,.4),
+      0 10px 18px -8px rgba(154,80,101,.6);
+    cursor:pointer; transition:transform .3s ease, box-shadow .3s ease;
+    flex-shrink:0;
+  }
+  .search-bar .go:hover{
+    transform:scale(1.1) rotate(8deg);
+    box-shadow:
+      inset 0 1px 1px rgba(255,255,255,.7),
+      inset 0 -6px 10px -6px rgba(59,42,46,.5),
+      0 14px 24px -8px rgba(154,80,101,.7);
+  }
+
+  /* tarjetas flotantes del hero — capa secundaria: mismo glass base,
+     pero un poco más ligeras que la barra de búsqueda para no competir con ella */
+  .float-card{
+    position:absolute;
+    background:rgba(255,255,255,.34);
+    border-radius:22px;
+    padding:24px 26px;
+    z-index:3;
+    will-change:transform;
+  }
+  .card-reserve{
+    right:6%; top:26%;
+    width:250px;
+  }
+  .card-reserve .display{ font-size:1.3rem; margin-bottom:8px; }
+  .card-reserve p{ font-size:.82rem; color:rgba(59,42,46,.7); line-height:1.5; margin-bottom:14px;}
+  .clients{ display:flex; align-items:center; gap:10px; }
+  .clients .num{ font-family:'Cormorant Garamond',serif; font-size:1.5rem; color:var(--rose-dark);}
+  .clients .lbl{ font-size:.64rem; letter-spacing:.1em; text-transform:uppercase; color:rgba(59,42,46,.55);}
+
+  .card-service{
+    right:8%; bottom:8%;
+    width:270px;
+  }
+  .card-service .tag{
+    font-size:.65rem; letter-spacing:.12em; text-transform:uppercase; color:var(--rose-dark);
+  }
+  .card-service .display{ font-size:1.2rem; margin:6px 0 10px;}
+  .card-service p{ font-size:.8rem; color:rgba(59,42,46,.68); line-height:1.55; margin-bottom:14px;}
+  .card-service .row{ display:flex; justify-content:space-between; align-items:center; border-top:1px solid rgba(59,42,46,.12); padding-top:12px;}
+  .card-service .price{ font-family:'Cormorant Garamond',serif; font-size:1.3rem; color:var(--ink);}
+  .card-service .dur{ font-size:.7rem; color:rgba(59,42,46,.55); letter-spacing:.06em;}
+
+  @media (max-width: 980px){
+    .float-card{ position:static; width:100%; margin-top:18px; }
+    .card-reserve, .card-service{ right:auto; top:auto; bottom:auto; }
+  }
+
+  /* ---------- Sections generic ---------- */
+  section{ padding:130px 5%; position:relative; }
+  .section-head{
+    display:flex; justify-content:space-between; align-items:flex-end;
+    gap:40px; margin-bottom:64px; flex-wrap:wrap;
+  }
+  .section-head h2{ font-size:clamp(2.2rem,4vw,3.2rem); max-width:600px; }
+  .section-head .desc{ max-width:340px; font-size:.95rem; line-height:1.7; color:rgba(59,42,46,.7);}
+
+  .reveal{
+    opacity:0; transform:translateY(48px);
+    transition:opacity .9s cubic-bezier(.16,1,.3,1), transform .9s cubic-bezier(.16,1,.3,1);
+  }
+  .reveal.in{ opacity:1; transform:translateY(0); }
+
+  /* ---------- Services ---------- */
+  .services-grid{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:26px;
+  }
+  .service-card{
+    background:var(--cream-2);
+    border:1px solid rgba(201,166,107,.3);
+    border-radius:24px;
+    padding:38px 32px;
+    transition:transform .5s cubic-bezier(.16,1,.3,1), box-shadow .5s ease, background .5s ease;
+    transform-style:preserve-3d;
+    will-change:transform;
+  }
+  .service-card:hover{
+    background:#fff;
+    box-shadow:var(--shadow);
+  }
+  .service-card .num{ font-family:'Cormorant Garamond',serif; color:var(--gold); font-size:1rem; margin-bottom:26px; display:block;}
+  .service-card h3{ font-size:1.6rem; margin-bottom:14px; }
+  .service-card p{ font-size:.88rem; line-height:1.7; color:rgba(59,42,46,.68); margin-bottom:28px; min-height:70px;}
+  .service-card .meta{
+    display:flex; justify-content:space-between; align-items:center;
+    border-top:1px solid rgba(59,42,46,.14); padding-top:18px;
+  }
+  .service-card .price{ font-family:'Cormorant Garamond',serif; font-size:1.5rem; color:var(--rose-dark);}
+  .service-card .dur{ font-size:.7rem; letter-spacing:.08em; text-transform:uppercase; color:rgba(59,42,46,.5);}
+
+  @media (max-width:900px){ .services-grid{ grid-template-columns:1fr; } }
+
+  /* ---------- Productos ---------- */
+  .products-grid{
+    display:grid; grid-template-columns:repeat(4,1fr); gap:20px;
+  }
+  .product-card{
+    background:var(--cream-2);
+    border:1px solid rgba(201,166,107,.3);
+    border-radius:20px;
+    overflow:hidden;
+    transition:transform .4s cubic-bezier(.16,1,.3,1), box-shadow .4s ease;
+  }
+  .product-card:hover{
+    transform:translateY(-4px);
+    box-shadow:var(--shadow);
+  }
+  .product-photo{ aspect-ratio:1/1.05; position:relative; }
+  .product-photo::after{
+    content:''; position:absolute; inset:0;
+    background:linear-gradient(to top, rgba(59,42,46,.25), transparent 55%);
+  }
+  .product-info{ padding:18px; }
+  .product-info .tag{
+    font-size:.6rem; letter-spacing:.12em; text-transform:uppercase; color:var(--rose-dark);
+  }
+  .product-info h3{
+    font-size:1.15rem; margin-top:6px; font-weight:500;
+  }
+  .product-info .meta{
+    display:flex; justify-content:space-between; align-items:center; margin-top:14px;
+  }
+  .product-info .price{
+    font-family:'Cormorant Garamond', serif; font-size:1.3rem; color:var(--ink);
+  }
+  .product-info .add{
+    width:30px; height:30px; border-radius:50%;
+    border:1px solid var(--gold); background:transparent; color:var(--rose-dark);
+    font-size:15px; cursor:pointer;
+    transition:background .3s ease, color .3s ease;
+  }
+  .product-info .add:hover{ background:var(--rose-dark); color:var(--cream); border-color:var(--rose-dark); }
+
+  @media (max-width:900px){ .products-grid{ grid-template-columns:repeat(2,1fr); } }
+  @media (max-width:520px){ .products-grid{ grid-template-columns:1fr; } }
+
+  /* ---------- Studio gallery (3D tilt) ---------- */
+  .studio{
+    background:var(--ink);
+    color:var(--cream);
+    border-radius:40px;
+    margin:0 5%;
+    padding:110px 5%;
+    width:auto;
+  }
+  .studio .eyebrow{ color:var(--gold); }
+  .studio h2{ color:var(--cream); }
+  .studio .desc{ color:rgba(251,243,239,.65); }
+  .gallery{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:24px;
+    perspective:1400px;
+  }
+  .gallery figure{
+    position:relative;
+    height:360px;
+    border-radius:170px 170px 20px 20px;
+    overflow:hidden;
+    will-change:transform;
+    transform-style:preserve-3d;
+    transition:transform .1s linear;
+    border:1px solid rgba(201,166,107,.35);
+  }
+  .gallery figure img{
+    width:100%; height:100%; object-fit:cover;
+    transform:scale(1.15);
+    transition:transform .6s ease;
+  }
+  .gallery figure:hover img{ transform:scale(1.28); }
+  .gallery figure figcaption{
+    position:absolute; left:0; right:0; bottom:0;
+    padding:22px;
+    background:linear-gradient(to top, rgba(59,42,46,.85), transparent);
+    font-family:'Cormorant Garamond', serif;
+    font-size:1.05rem;
+    color:var(--cream);
+  }
+  @media (max-width:900px){
+    .gallery{ grid-template-columns:1fr; }
+    .studio{ border-radius:24px; padding:80px 6%; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    html{ scroll-behavior:auto; }
+    .reveal{ transition:none; opacity:1; transform:none; }
+    .gallery figure, .service-card, #ribbon-svg, .float-card, .search-bar{ transition:none !important; transform:none !important; }
+  }
+</style>
+</head>
+<body>
+
+<a href="#servicios" class="skip-link">Saltar al contenido</a>
+
+<header id="site-header">
+  <div class="logo">
+    <span class="logo-mark">S</span>
+    SEDA STUDIO
+  </div>
+
+  <nav class="nav-links liquid-glass" aria-label="Navegación principal">
+    <a href="#servicios">Servicios</a>
+    <a href="#estudio">Estudio</a>
+    <a href="#agenda">Agenda</a>
+    <a href="#productos">Productos</a>
+  </nav>
+
+  <a href="#agenda" class="btn solid desktop-cta">Reservar</a>
+
+  <button class="menu-button" type="button" aria-label="Abrir menú" aria-expanded="false" aria-controls="mobile-panel">
+    <span></span>
+  </button>
+</header>
+
+<div class="mobile-panel liquid-glass" id="mobile-panel">
+  <a href="#servicios">Servicios</a>
+  <a href="#estudio">Estudio</a>
+  <a href="#agenda">Agenda</a>
+  <a href="#productos">Productos</a>
+  <a href="#agenda" class="btn solid" style="margin-top:8px; justify-content:center;">Reservar</a>
+</div>
+
+<section class="hero">
+  <div class="ribbon-wrap">
+    <svg id="ribbon-svg" viewBox="0 0 1200 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path id="ribbon-path" class="ribbon-path" d="M -100 300 C 200 100, 400 500, 650 320 C 900 140, 1000 480, 1300 350"
+        stroke="#C9A66B" stroke-width="2" stroke-opacity="0.55" fill="none"/>
+      <path id="ribbon-path-2" class="ribbon-path" d="M -100 420 C 250 250, 420 620, 700 460 C 950 320, 1050 600, 1300 480"
+        stroke="#B8677A" stroke-width="1.5" stroke-opacity="0.4" fill="none"/>
+      <path id="ribbon-path-3" class="ribbon-path" d="M -100 200 C 220 60, 380 380, 620 210 C 880 30, 980 340, 1300 220"
+        stroke="#3B2A2E" stroke-width="1" stroke-opacity="0.18" fill="none"/>
+    </svg>
+  </div>
+  <div class="hero-grain"></div>
+
+  <div class="hero-content">
+    <div class="eyebrow">Salón de Autor</div>
+    <h1 class="hero-title">Belleza con <em>carácter</em>,<br>sin prisa.</h1>
+    <p class="hero-sub">Color, corte y ritual capilar hechos a mano. Cada cita empieza con una consulta breve para entender tu textura, tu rostro y tu rutina real.</p>
+
+    <div class="search-bar liquid-glass">
+      <div class="field">
+        <label>Servicio</label>
+        <div class="val">Cualquiera ▾</div>
+      </div>
+      <div class="field">
+        <label>Estilista</label>
+        <div class="val">Cualquiera ▾</div>
+      </div>
+      <div class="field">
+        <label>Sede</label>
+        <div class="val">Centro ▾</div>
+      </div>
+      <div class="field">
+        <label>Fecha</label>
+        <div class="val">Hoy ▾</div>
+      </div>
+      <button class="go" aria-label="Buscar">→</button>
+    </div>
+  </div>
+
+  <div class="float-card card-reserve liquid-glass" id="tilt-reserve">
+    <div class="display">Reserva tu lugar</div>
+    <p>Agenda en segundos y guarda tu historial de color y cortes.</p>
+    <div class="clients">
+      <span class="num">500+</span>
+      <span class="lbl">Clientas</span>
+    </div>
+  </div>
+
+  <div class="float-card card-service liquid-glass" id="tilt-service">
+    <div class="tag">Con Renata M.</div>
+    <div class="display">Balayage + Tratamiento</div>
+    <p>Técnica a mano alzada, matiz personalizado y sellado de brillo.</p>
+    <div class="row">
+      <span class="price">$65</span>
+      <span class="dur">1H 40M</span>
+    </div>
+  </div>
+</section>
+
+<section id="servicios">
+  <div class="section-head reveal">
+    <h2>Lo que hacemos</h2>
+    <p class="desc">Cada servicio parte de una consulta breve para entender tu forma de rostro, tu textura y tu rutina.</p>
+  </div>
+  <div class="services-grid">
+    <div class="service-card reveal">
+      <span class="num">Corte</span>
+      <h3>Corte de Autor</h3>
+      <p>Diagnóstico de textura, corte a medida y peinado de salida con productos de acabado.</p>
+      <div class="meta"><span class="price">$28</span><span class="dur">45 min</span></div>
+    </div>
+    <div class="service-card reveal">
+      <span class="num">Color</span>
+      <h3>Balayage &amp; Matiz</h3>
+      <p>Técnica a mano alzada, matiz personalizado según tu tono de piel y sellado de brillo.</p>
+      <div class="meta"><span class="price">$65</span><span class="dur">1h 40m</span></div>
+    </div>
+    <div class="service-card reveal">
+      <span class="num">Ritual</span>
+      <h3>Ritual Seda</h3>
+      <p>Corte, tratamiento de hidratación profunda, masaje capilar y peinado final.</p>
+      <div class="meta"><span class="price">$78</span><span class="dur">2h 10m</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="estudio">
+  <div class="studio">
+    <div class="section-head reveal">
+      <div>
+        <div class="eyebrow" style="margin-bottom:14px;">El Espacio</div>
+        <h2>Nuestro estudio</h2>
+      </div>
+      <p class="desc">Luz natural, mármol claro y una cinta de seda que recorre cada rincón — un lugar hecho para quedarse.</p>
+    </div>
+    <div class="gallery">
+      <figure class="reveal" data-tilt>
+        <img src="https://images.unsplash.com/photo-1600948836101-f9ffda59d250?q=80&w=800&auto=format&fit=crop" alt="Interior del estudio con luz natural">
+        <figcaption>Sala principal</figcaption>
+      </figure>
+      <figure class="reveal" data-tilt>
+        <img src="https://images.unsplash.com/photo-1522337094846-8a8b0f7b2f6b?q=80&w=800&auto=format&fit=crop" alt="Estación de color y tratamiento">
+        <figcaption>Estación de color</figcaption>
+      </figure>
+      <figure class="reveal" data-tilt>
+        <img src="https://images.unsplash.com/photo-1595475207225-428b62bda831?q=80&w=800&auto=format&fit=crop" alt="Área de lavado y descanso">
+        <figcaption>Sala de descanso</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section id="productos">
+  <div class="section-head reveal">
+    <h2>Ritual en casa</h2>
+    <p class="desc">Las mismas fórmulas que usamos en el sillón, listas para llevar a casa.</p>
+  </div>
+  <div class="products-grid">
+    <div class="product-card reveal">
+      <div class="product-photo">
+        <img src="https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?q=80&w=500&auto=format&fit=crop" alt="Aceite capilar">
+      </div>
+      <div class="product-info">
+        <span class="tag">Cabello</span>
+        <h3>Elixir de brillo</h3>
+        <div class="meta"><span class="price">$24</span><button class="add" aria-label="Agregar">+</button></div>
+      </div>
+    </div>
+    <div class="product-card reveal">
+      <div class="product-photo">
+        <img src="https://images.unsplash.com/photo-1585232351009-aa87416fca90?q=80&w=500&auto=format&fit=crop" alt="Shampoo sin sulfatos">
+      </div>
+      <div class="product-info">
+        <span class="tag">Limpieza</span>
+        <h3>Shampoo de seda</h3>
+        <div class="meta"><span class="price">$19</span><button class="add" aria-label="Agregar">+</button></div>
+      </div>
+    </div>
+    <div class="product-card reveal">
+      <div class="product-photo">
+        <img src="https://images.unsplash.com/photo-1621607512022-6aa5b2c2e40b?q=80&w=500&auto=format&fit=crop" alt="Mascarilla capilar">
+      </div>
+      <div class="product-info">
+        <span class="tag">Tratamiento</span>
+        <h3>Mascarilla nutritiva</h3>
+        <div class="meta"><span class="price">$28</span><button class="add" aria-label="Agregar">+</button></div>
+      </div>
+    </div>
+    <div class="product-card reveal">
+      <div class="product-photo">
+        <img src="https://images.unsplash.com/photo-1522338242992-e1a54906a8da?q=80&w=500&auto=format&fit=crop" alt="Cepillo de cerda natural">
+      </div>
+      <div class="product-info">
+        <span class="tag">Herramientas</span>
+        <h3>Cepillo de cerda natural</h3>
+        <div class="meta"><span class="price">$16</span><button class="add" aria-label="Agregar">+</button></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!--
+  NOTA: el archivo original que enviaste se cortaba aquí (a mitad de un
+  <img src="...>). Todo lo de arriba ya está corregido y mejorado — abajo
+  agregué el <script> con lo que faltaba para que las animaciones descritas
+  (glass, tilt, reveal, cinta de seda, menú móvil) funcionen de verdad.
+  Faltan por revisar: testimonios, CTA final, footer, y el <script> original
+  (si tenía uno) — pégamelos y los reviso también.
+-->
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+  /* ---------- Header: fondo glass al hacer scroll ---------- */
+  const header = document.getElementById('site-header');
+  function updateHeader(){
+    if (!header) return;
+    if (window.scrollY > 30) header.classList.add('scrolled');
+    else header.classList.remove('scrolled');
+  }
+  window.addEventListener('scroll', updateHeader, { passive: true });
+  updateHeader();
+
+  /* ---------- Menú móvil ---------- */
+  const menuButton = document.querySelector('.menu-button');
+  const mobilePanel = document.getElementById('mobile-panel');
+  if (menuButton && mobilePanel) {
+    menuButton.addEventListener('click', function () {
+      const isOpen = mobilePanel.classList.toggle('open');
+      header.classList.toggle('menu-open', isOpen);
+      menuButton.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      menuButton.setAttribute('aria-label', isOpen ? 'Cerrar menú' : 'Abrir menú');
+    });
+    mobilePanel.querySelectorAll('a').forEach(function (link) {
+      link.addEventListener('click', function () {
+        mobilePanel.classList.remove('open');
+        header.classList.remove('menu-open');
+        menuButton.setAttribute('aria-expanded', 'false');
+        menuButton.setAttribute('aria-label', 'Abrir menú');
+      });
+    });
+  }
+
+  /* ---------- Reveal on scroll ---------- */
+  const revealEls = document.querySelectorAll('.reveal');
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if ('IntersectionObserver' in window && !reducedMotion) {
+    const io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('in');
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -60px 0px' });
+    revealEls.forEach(function (el) { io.observe(el); });
+  } else {
+    revealEls.forEach(function (el) { el.classList.add('in'); });
+  }
+
+  /* ---------- Tilt 3D: tarjetas flotantes del hero y galería ---------- */
+  if (!reducedMotion) {
+    const tiltEls = document.querySelectorAll('.float-card, .gallery figure[data-tilt]');
+    tiltEls.forEach(function (el) {
+      el.addEventListener('mousemove', function (e) {
+        const rect = el.getBoundingClientRect();
+        const px = (e.clientX - rect.left) / rect.width - 0.5;
+        const py = (e.clientY - rect.top) / rect.height - 0.5;
+        el.style.transform = 'perspective(700px) rotateY(' + (px * 10) + 'deg) rotateX(' + (-py * 10) + 'deg)';
+      });
+      el.addEventListener('mouseleave', function () {
+        el.style.transform = 'none';
+      });
+    });
+  }
+
+});
+</script>
+
+</body>
+</html>
